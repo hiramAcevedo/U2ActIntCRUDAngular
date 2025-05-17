@@ -1,0 +1,154 @@
+<div class="form-container fade-in">
+  <div class="card">
+    <div class="form-header">
+      <h2>{{ isEditMode ? 'Editar Evento' : 'Crear Nuevo Evento' }}</h2>
+      <p class="form-subtitle">{{ isEditMode ? 'Actualiza la información del evento' : 'Completa el formulario para crear un evento' }}</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" class="event-form">
+      <div class="form-section">
+        <h3 class="section-title">Información Básica</h3>
+        
+        <div class="form-group">
+          <label for="title" class="required-field">Título</label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            [(ngModel)]="event.title" 
+            required
+            placeholder="Ej. Conferencia sobre Angular">
+        </div>
+
+        <div class="form-group">
+          <label for="eventType" class="required-field">Tipo de evento</label>
+          <select 
+            id="eventType" 
+            name="eventType" 
+            [(ngModel)]="event.eventType" 
+            required>
+            <option *ngFor="let type of eventTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Descripción</label>
+          <textarea 
+            id="description" 
+            name="description" 
+            [(ngModel)]="event.description"
+            rows="3"
+            placeholder="Describe los detalles del evento..."></textarea>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h3 class="section-title">Fecha y Ubicación</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date" class="required-field">Fecha</label>
+            <div class="input-with-icon">
+              <span class="input-icon"><lucide-icon name="calendar" size="16"></lucide-icon></span>
+              <input 
+                type="date" 
+                id="date" 
+                name="date"
+                [ngModel]="event.date | date:'yyyy-MM-dd'" 
+                (ngModelChange)="event.date = $event"
+                required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="location" class="required-field">Ubicación</label>
+            <div class="input-with-icon">
+              <span class="input-icon"><lucide-icon name="map-pin" size="16"></lucide-icon></span>
+              <input 
+                type="text" 
+                id="location" 
+                name="location" 
+                [(ngModel)]="event.location"
+                required
+                placeholder="Ej. Centro de Convenciones, Guadalajara">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h3 class="section-title">Detalles Adicionales</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="organizer" class="required-field">Organizador</label>
+            <div class="input-with-icon">
+              <span class="input-icon"><lucide-icon name="user" size="16"></lucide-icon></span>
+              <input 
+                type="text" 
+                id="organizer" 
+                name="organizer" 
+                [(ngModel)]="event.organizer"
+                required
+                placeholder="Ej. Universidad de Guadalajara">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="maxAttendees">Capacidad Máxima</label>
+            <div class="input-with-icon">
+              <span class="input-icon"><lucide-icon name="users" size="16"></lucide-icon></span>
+              <input 
+                type="number" 
+                id="maxAttendees" 
+                name="maxAttendees" 
+                [(ngModel)]="event.maxAttendees"
+                min="0"
+                placeholder="Número de asistentes">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="checkbox-row">
+            <div class="checkbox-item">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  id="isVirtual" 
+                  name="isVirtual" 
+                  [(ngModel)]="event.isVirtual">
+                <span class="checkbox-text">Evento virtual</span>
+              </label>
+              <span class="help-text">Marca si el evento se realizará en línea</span>
+            </div>
+            
+            <div class="checkbox-item">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  id="isSurprise" 
+                  name="isSurprise" 
+                  [(ngModel)]="event.isSurprise">
+                <span class="checkbox-text">Evento sorpresa</span>
+              </label>
+              <span class="help-text">Marca si es un evento sorpresa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <a [routerLink]="['/events']" class="btn-cancel">
+          Cancelar
+        </a>
+        <button type="submit" class="btn-submit">
+          <span class="btn-icon">
+            <lucide-icon [name]="isEditMode ? 'save' : 'plus'" size="16"></lucide-icon>
+          </span>
+          {{ isEditMode ? 'Guardar Cambios' : 'Crear Evento' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

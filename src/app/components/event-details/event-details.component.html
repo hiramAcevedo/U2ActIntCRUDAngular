@@ -1,0 +1,241 @@
+<div class="details-container" *ngIf="event">
+  <div class="event-details-card">
+    <div class="event-header">
+      <div class="event-title-section">
+        <div class="event-badges">
+          <div class="event-type-badge">
+            {{ event.eventType }}
+          </div>
+          <div class="event-type-badge virtual" *ngIf="event.isVirtual">
+            Virtual
+          </div>
+          <div class="event-type-badge surprise" *ngIf="event.isSurprise">
+            Sorpresa
+          </div>
+        </div>
+        <h2>{{ event.title }}</h2>
+      </div>
+      
+      <div class="action-buttons">
+        <a [routerLink]="['/events/edit', event.id]" class="btn-edit" title="Editar evento">
+          <span class="btn-icon"><lucide-icon name="pencil" size="16"></lucide-icon></span>
+          <span>Editar</span>
+        </a>
+        <button class="btn-delete" (click)="deleteEvent()" title="Eliminar evento">
+          <span class="btn-icon"><lucide-icon name="trash" size="16"></lucide-icon></span>
+          <span>Eliminar</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="event-meta">
+      <div class="meta-item">
+        <div class="meta-icon"><lucide-icon name="calendar" size="20"></lucide-icon></div>
+        <div class="meta-content">
+          <div class="meta-label">Fecha</div>
+          <div class="meta-value">{{ event.date | date:'dd/MM/yyyy' }}</div>
+        </div>
+      </div>
+      
+      <div class="meta-item">
+        <div class="meta-icon"><lucide-icon name="map-pin" size="20"></lucide-icon></div>
+        <div class="meta-content">
+          <div class="meta-label">Ubicación</div>
+          <div class="meta-value">{{ event.location }}</div>
+        </div>
+      </div>
+      
+      <div class="meta-item">
+        <div class="meta-icon"><lucide-icon name="user" size="20"></lucide-icon></div>
+        <div class="meta-content">
+          <div class="meta-label">Organizador</div>
+          <div class="meta-value">{{ event.organizer }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="event-capacity">
+      <div class="capacity-section">
+        <h3>Capacidad</h3>
+        <div class="capacity-info">
+          <div class="capacity-value">
+            <span class="current">{{ event.currentAttendees || 0 }}</span>
+            <span class="separator">/</span>
+            <span class="max">{{ event.maxAttendees || 'Sin límite' }}</span>
+          </div>
+          <div class="capacity-label">asistentes</div>
+        </div>
+        
+        <div class="progress-container" *ngIf="event.maxAttendees > 0">
+          <div class="progress-bar" 
+               [style.width.%]="event.maxAttendees ? ((event.currentAttendees || 0) / event.maxAttendees * 100) : 0">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="event-description" *ngIf="event.description">
+      <h3>Descripción</h3>
+      <p>{{ event.description }}</p>
+    </div>
+    
+    <!-- Sección de invitados -->
+    <div class="guests-section">
+      <div class="section-header">
+        <h3>Lista de Invitados</h3>
+        <button class="btn-add-guest" (click)="addGuest()">
+          <lucide-icon name="user-plus" size="18"></lucide-icon>
+          <span>Añadir Invitado</span>
+        </button>
+      </div>
+      
+      <!-- Estadísticas de invitados -->
+      <div class="guests-stats">
+        <div class="stat-item">
+          <div class="stat-value">{{ guests.length }}</div>
+          <div class="stat-label">Total invitados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ getConfirmedAttendees() }}</div>
+          <div class="stat-label">Confirmados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ getTotalAttendees() }}</div>
+          <div class="stat-label">Personas totales</div>
+        </div>
+      </div>
+      
+      <!-- Filtros de invitados -->
+      <div class="guest-filters" *ngIf="guests.length > 0">
+        <div class="search-box">
+          <lucide-icon name="search" size="18"></lucide-icon>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar invitado...">
+        </div>
+        
+        <div class="filter-dropdown">
+          <select [(ngModel)]="filterConfirmed">
+            <option value="all">Todos</option>
+            <option value="confirmed">Confirmados</option>
+            <option value="pending">Pendientes</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Tabla de invitados -->
+      <div class="guests-table-container" *ngIf="filteredGuests.length > 0">
+        <table class="guests-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Origen</th>
+              <th>Acompañantes</th>
+              <th>Relación</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let guest of filteredGuests">
+              <td>{{ guest.name }}</td>
+              <td>{{ guest.origin || '-' }}</td>
+              <td>{{ guest.companions }}</td>
+              <td>{{ guest.relationship || '-' }}</td>
+              <td>
+                <span class="status-badge" [class.confirmed]="guest.confirmed">
+                  {{ guest.confirmed ? 'Confirmado' : 'Pendiente' }}
+                </span>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <button class="action-button edit-button" (click)="editGuest(guest)">
+                    <lucide-icon name="pencil" size="16"></lucide-icon>
+                  </button>
+                  <button class="action-button delete-button" (click)="deleteGuest(guest.id)">
+                    <lucide-icon name="trash" size="16"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Mensaje si no hay invitados -->
+      <div class="empty-guests" *ngIf="guests.length === 0">
+        <lucide-icon name="users" size="48"></lucide-icon>
+        <p>No hay invitados registrados</p>
+        <p class="hint">Haz clic en "Añadir Invitado" para empezar a crear la lista</p>
+      </div>
+      
+      <!-- Mensaje si no hay resultados en la búsqueda -->
+      <div class="empty-search" *ngIf="guests.length > 0 && filteredGuests.length === 0">
+        <lucide-icon name="search" size="32"></lucide-icon>
+        <p>No se encontraron invitados con esos criterios de búsqueda</p>
+      </div>
+      
+      <!-- Formulario de invitado (modal) -->
+      <div class="guest-form-overlay" *ngIf="showGuestForm">
+        <div class="guest-form-container">
+          <div class="guest-form-header">
+            <h3>{{ isEditingGuest ? 'Editar Invitado' : 'Añadir Invitado' }}</h3>
+            <button class="close-button" (click)="cancelGuestForm()">
+              <lucide-icon name="x" size="18"></lucide-icon>
+            </button>
+          </div>
+          
+          <div class="guest-form-content">
+            <div class="form-group">
+              <label for="guestName" class="required-field">Nombre</label>
+              <input type="text" id="guestName" name="guestName" [(ngModel)]="newGuest.name" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guestOrigin">Origen</label>
+                <input type="text" id="guestOrigin" name="guestOrigin" [(ngModel)]="newGuest.origin" placeholder="Ciudad, país...">
+              </div>
+              
+              <div class="form-group">
+                <label for="guestRelationship">Relación</label>
+                <input type="text" id="guestRelationship" name="guestRelationship" [(ngModel)]="newGuest.relationship" placeholder="Familiar, amigo...">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guestCompanions">Acompañantes</label>
+                <input type="number" id="guestCompanions" name="guestCompanions" [(ngModel)]="newGuest.companions" min="0">
+              </div>
+              
+              <div class="form-group checkbox-container">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="guestConfirmed" name="guestConfirmed" [(ngModel)]="newGuest.confirmed">
+                  <span class="checkbox-text">Confirmado</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="guestNotes">Notas</label>
+              <textarea id="guestNotes" name="guestNotes" [(ngModel)]="newGuest.notes" rows="2" placeholder="Información adicional..."></textarea>
+            </div>
+          </div>
+          
+          <div class="guest-form-actions">
+            <button class="btn-cancel" (click)="cancelGuestForm()">Cancelar</button>
+            <button class="btn-save" (click)="saveGuest()">
+              {{ isEditingGuest ? 'Actualizar' : 'Añadir' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="back-section">
+      <a [routerLink]="['/events']" class="back-link">
+        <span class="back-icon"><lucide-icon name="arrow-left" size="16"></lucide-icon></span>
+        <span>Volver a la lista de eventos</span>
+      </a>
+    </div>
+  </div>
+</div>
